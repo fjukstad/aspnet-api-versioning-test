@@ -26,7 +26,7 @@ namespace api_version_test
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
-            services.AddApiVersioning();
+            services.AddApiVersioning(o => o.AssumeDefaultVersionWhenUnspecified = true);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
