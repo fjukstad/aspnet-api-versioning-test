@@ -10,6 +10,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Swashbuckle.AspNetCore.Swagger;
 
 namespace api_version_test
 {
@@ -26,11 +28,29 @@ namespace api_version_test
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+             services.AddMvcCore().AddVersionedApiExplorer( o => o.GroupNameFormat = "'v'VVV" );
             services.AddApiVersioning(o => o.AssumeDefaultVersionWhenUnspecified = true);
+            services.AddSwaggerGen(
+               options =>
+               {
+                   var provider = services.BuildServiceProvider()
+                               .GetRequiredService<IApiVersionDescriptionProvider>();
+
+                   foreach (var description in provider.ApiVersionDescriptions)
+                   {
+                       options.SwaggerDoc(
+              description.GroupName,
+                new Info()
+                       {
+                           Title = $"Sample API {description.ApiVersion}",
+                           Version = description.ApiVersion.ToString()
+                       });
+                   }
+               });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApiVersionDescriptionProvider provider)
         {
             if (env.IsDevelopment())
             {
@@ -43,6 +63,19 @@ namespace api_version_test
 
             app.UseHttpsRedirection();
             app.UseMvc();
+
+
+            app.UseSwagger();
+            app.UseSwaggerUI(
+                options =>
+                {
+                    foreach (var description in provider.ApiVersionDescriptions)
+                    {
+                        options.SwaggerEndpoint(
+                            $"/swagger/{description.GroupName}/swagger.json",
+                            description.GroupName.ToUpperInvariant());
+                    }
+                });
         }
     }
 }
