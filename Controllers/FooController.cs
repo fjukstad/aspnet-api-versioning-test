@@ -10,15 +10,13 @@ namespace api_version_test.Controllers
     [Route("v{api-version:apiVersion}/foo")]
     [ApiVersion("1.0")]
     [ApiVersion("2.0")]
-    [ApiVersion("3.0")]
     [ApiController]
     public class FooController : ControllerBase
     {
         [HttpGet]
         [MapToApiVersion("1.0")]
-        [MapToApiVersion("3.0")]
         public ActionResult<string> Get(){
-            return "v1 or v3";
+            return "v1";
         }
 
         [HttpGet]
@@ -27,7 +25,7 @@ namespace api_version_test.Controllers
             return "v2";
         }
 
-        [HttpGet("/squared/{number}")]
+        [HttpGet("squared/{number}")]
         [MapToApiVersion("2.0")]
         public ActionResult<string> Squared(int number){
             return (number * number).ToString();
